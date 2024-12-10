@@ -6,7 +6,7 @@
 #    By: vvobis <marvin@42.fr>                      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/09/17 14:23:19 by vvobis            #+#    #+#              #
-#    Updated: 2024/12/10 21:16:51 by vvobis           ###   ########.fr        #
+#    Updated: 2024/12/10 21:25:30 by vvobis           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -66,7 +66,7 @@ so:
 	gcc -shared -o libft.so $(OBJ) $(OBJBON)
 
 fclean: clean
-	rm -f $(NAME)
+	rm -rf $(LIBDIR)
 	make fclean -C $(LIBS)
 
 clean:
