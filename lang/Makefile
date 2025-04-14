@@ -1,9 +1,16 @@
-SRC := asem.s
-
+SRCDIR := src
+SRC := $(addprefix $(SRCDIR)/, $(addsuffix .s, asem balloc split))
 
 OBJDIR := obj
-OBJ := $(OBJDIR)/$(SRC:.s=.o)
+OBJ := $(addprefix $(OBJDIR)/, $(notdir $(SRC:.s=.o)))
 
-all: 
-	nasm -felf64 -g $(SRC) -o $(OBJ)
+$(shell mkdir -p $(OBJDIR))
+
+all: $(OBJ) 
 	ld -o debug $(OBJ) -nostdlib -static
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.s
+	nasm -felf64 -g $< -o $@
+
+clean:
+	rm -rf $(OBJDIR) debug
