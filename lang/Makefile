@@ -1,5 +1,6 @@
 SRCDIR := src
-SRC := $(addprefix $(SRCDIR)/, $(addsuffix .s, asem balloc split))
+SRC := $(addprefix $(SRCDIR)/, $(addsuffix .s, start malloc split exit file_ops \
+	   print strlen putnumber strcpy substr memchr))
 
 OBJDIR := obj
 OBJ := $(addprefix $(OBJDIR)/, $(notdir $(SRC:.s=.o)))
@@ -10,7 +11,9 @@ all: $(OBJ)
 	ld -o debug $(OBJ) -nostdlib -static
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.s
-	nasm -felf64 -g $< -o $@
+	nasm -felf64 -F dwarf -g $< -o $@
 
 clean:
 	rm -rf $(OBJDIR) debug
+
+re: clean all
