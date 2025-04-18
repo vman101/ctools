@@ -1,6 +1,5 @@
 section .text
     global split
-    global print_split
     extern malloc
     extern putstr
     extern putnumber
@@ -34,24 +33,10 @@ count_splits:       ; RAX: int count_splits(RDI: char *, RSI: int c)
     inc rax
     ret
 
-print_split:        ; print_split(rdi: char **)
-    cmp qword [rdi], 0
-    je  .done
-    push rdi
-    mov r8, [rdi]
-    mov rdi, r8
-    call putstr
-    pop rdi
-    add rdi, 8
-    jmp print_split
-.done:
-    ret
-
 split:              ; RAX: char ** split(RDI: char *, RSI: int)
     push rbp
     mov rbp, rsp    ; save base pointer
     push rbx
-    push rcx
     push r12
     push r13
 
@@ -59,30 +44,26 @@ split:              ; RAX: char ** split(RDI: char *, RSI: int)
     ; char **split = [ rbp - 8 ]
 
     sub rsp, 16      ; allocate local vars
-
+    mov [rbp - 8], rdi
     call count_splits
-
-    mov [rbp], rdi
-
     mov rcx, 8
     mov rbx, rax
     inc rax
     mul rcx
-
     push rdi
     push rsi
     mov rdi, rax
     call malloc
+    pop rsi
+    pop rdi
     cmp rax, 0
     je .fail
 
-    pop rsi
-    pop rdi
 
 
     mov qword [rax + rbx * 8], 0
 
-    mov [rbp - 8], rax
+    mov [rbp - 16], rax
     mov rcx, rax
 
     cmp rbx, 1
@@ -98,13 +79,16 @@ split:              ; RAX: char ** split(RDI: char *, RSI: int)
     push rcx
     call memchr
     pop rcx
+    xor r9, r9
+    jmp .skip_matches
+.after_skip:
 
-    mov rdx, rax
+    lea rdx, [rax]
     sub rdx, rdi
     sub r13, rdx
 
     mov r12, rax
-    inc r12
+    add r12, r9
 
     push rsi
     mov rsi, 0
@@ -128,14 +112,23 @@ split:              ; RAX: char ** split(RDI: char *, RSI: int)
     pop rcx
     mov [rcx], rax
 .done:
-    mov rax, [rbp - 8]
+    mov rax, [rbp - 16]
 .cleanup:
     add rsp, 16
     pop r13
     pop r12
     pop rbx
-    pop rcx
     mov rsp, rbp
     pop rbp
     ret
+
+.skip_matches:
+    cmp byte [rax + r9], 0
+    jz .after_skip
+    cmp byte [rax + r9], sil
+    jnz .after_skip
+    inc r9
+    dec r13
+    jmp .skip_matches
+
 

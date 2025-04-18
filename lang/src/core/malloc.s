@@ -2,7 +2,9 @@ section .data
     heap_break: dq 0
     heap_start: dq 0
     failure: db "[MALLOC] ERROR rax address: ", 0
-    success: db "[MALLOC] INFO address: ", 0
+    success: db "[MALLOC] INFO new address: ", 0
+    str_allocated: db " allocated ", 0
+    str_bytecnt: db " bytes", 0
     rdi_addr: db "rdx address: "
 
 section .text
@@ -12,8 +14,8 @@ section .text
     extern putstr
     extern putchar
     extern putnumber
+    extern putendl
 
-free:               ; free(rdi: void *ptr)
 brk_find_break:     ; RAX: long brk(0)
     mov rdi, 0x0
     mov rax, 0xC    ; sys_brk
@@ -39,7 +41,6 @@ malloc:                     ; RAX: long basic_malloc(RDI: size_t n)
     add rdi, rbx
 
     mov rax, 0xC        ; sys_brk
-
     syscall
 
     cmp rax, rdi
@@ -53,8 +54,14 @@ malloc:                     ; RAX: long basic_malloc(RDI: size_t n)
     call putstr
     mov rdi, r8
     call putnumber
-    mov rdi, 0xa
-    call putchar
+
+    mov rdi, str_allocated
+    call putstr
+
+    mov rdi, rbx
+    call putnumber
+    mov rdi, str_bytecnt
+    call putendl
 
     pop rax
     sub rax, rbx

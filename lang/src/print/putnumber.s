@@ -1,7 +1,14 @@
 global putnumber
+global putnumberendl
 
 section .text
     extern putchar
+
+putnumberendl:
+    call putnumber
+    mov rdi, 0xa
+    call putchar
+    ret
 
 putnumber:      ;   void put_number(RDI: int c)
     push rbx
