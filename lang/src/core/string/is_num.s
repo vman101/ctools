@@ -17,8 +17,8 @@ is_num_str:     ; rax: bool (rdi: char *)
     xor rcx, rcx
     mov r8, rdi
 .loop:
-    mov rdi, [r8 + rcx]
-    cmp rdi, 0
+    mov dil, byte [r8 + rcx]
+    cmp dil, 0
     je .done
     call is_num
     cmp rax, 0

@@ -1,5 +1,6 @@
 section .text
     global split
+    global get_split_count
     extern malloc
     extern putstr
     extern putnumber
@@ -7,6 +8,17 @@ section .text
     extern memchr
     extern substr
     extern strlen
+
+get_split_count:    ; rax: uint (rdi: char **)
+    xor rcx, rcx
+.loop:
+    cmp qword [rdi + rcx * 8], 0
+    jz .done
+    inc rcx
+    jmp .loop
+.done:
+    mov rax, rcx
+    ret
 
 count_splits:       ; RAX: int count_splits(RDI: char *, RSI: int c)
     push rbx
@@ -34,12 +46,12 @@ count_splits:       ; RAX: int count_splits(RDI: char *, RSI: int c)
     ret
 
 split:              ; RAX: char ** split(RDI: char *, RSI: int)
-    push rbp
-    mov rbp, rsp    ; save base pointer
     push rbx
     push r12
     push r13
 
+    push rbp
+    mov rbp, rsp    ; save base pointer
     ; int count = [ rbp - 4 ]
     ; char **split = [ rbp - 8 ]
 
@@ -71,7 +83,9 @@ split:              ; RAX: char ** split(RDI: char *, RSI: int)
 
     call strlen
     mov r13, rax
+    mov r12, rdi
 .loop:
+    mov rdi, r12
     cmp rbx, 0
     je .done
 
@@ -91,12 +105,11 @@ split:              ; RAX: char ** split(RDI: char *, RSI: int)
     add r12, r9
 
     push rsi
-    mov rsi, 0
     push rcx
+    mov rsi, 0
     call substr
     pop rcx
     pop rsi
-    mov rdi, r12
     lea r8, [rax]
     mov [rcx], r8
     add rcx, 8
@@ -115,11 +128,11 @@ split:              ; RAX: char ** split(RDI: char *, RSI: int)
     mov rax, [rbp - 16]
 .cleanup:
     add rsp, 16
+    mov rsp, rbp
+    pop rbp
     pop r13
     pop r12
     pop rbx
-    mov rsp, rbp
-    pop rbp
     ret
 
 .skip_matches:

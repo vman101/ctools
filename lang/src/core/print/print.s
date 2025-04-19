@@ -8,7 +8,7 @@ section .text
 
 print_split:        ; print_split(rdi: char **)
     xor rcx, rcx
-.loop
+.loop:
     cmp qword [rdi], 0
     je  .done
     push rdi

@@ -6,13 +6,13 @@ section .text
 
 strcpy:         ; rax: char *(rdi: char *)
     push rbx
+    push rcx
     call strlen
     mov r9, rdi     ; r9 contains arg
     mov r8, rax
     mov rdi, rax
     inc rdi
     call malloc
-    push rcx
     xor rcx, rcx
 .loop:
     cmp byte [r9 + rcx], 0

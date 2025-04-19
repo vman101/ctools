@@ -1,5 +1,5 @@
 section .data
-    token: db 0xa, "---------", 0xa, "Token ", 0
+    token: db 0xa, "Token ", 0
     type: db "type = ", 0
     value: db "value = ", 0
 
@@ -10,8 +10,10 @@ section .text
     extern putchar
     extern putnumberendl
 
-print_tokens:       ; (rdi: tok*, rsi: int n)
+print_tokens:       ; (rdi: tok*)
     xor rcx, rcx
+    push r12
+    push r13
     push rbx
     mov rbx, rdi
     mov r13, rsi
@@ -45,4 +47,6 @@ print_tokens:       ; (rdi: tok*, rsi: int n)
 
 .done:
     pop rbx
+    pop r13
+    pop r12
     ret

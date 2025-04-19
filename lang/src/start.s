@@ -20,54 +20,40 @@ section .text
     extern putendl
     extern parse
     extern print_tokens
+    extern err_malloc
+    extern get_file_content
+    extern create_expressions
 
 print_usage:
     mov rdi, usage
     call putstr
 
-get_file_content:       ; rax: char *(rdi: char*)
-    mov rsi, 0
-    call open
-    mov rdi, rax
-    push rax
-    call read_file
-    mov rsi, rax
-    pop rdi
-    call close
-    mov rax, rsi
-    ret
+
+%define EXPR_SIZE 32
+
+; struct expression size = 32
+;   .type
+;   .tok_count + 8
+;   .tokens + 16
 
 _start:
     pop rdi
     cmp rdi, 2
     jne err_args
     mov rdi, [rsp + 8]      ; argv[1]
-
     push rbp
     mov rbp, rsp
-    sub rsp, 32             ; allocate stack
+
+    sub rsp, 16
 
     call get_file_content
-
     mov rdi, rax
-    mov rsi, 0x0a
-    call split
+    call create_expressions
+    mov [rbp - 8], rax
 
-    mov rdi, rax
-    push rdi
-    call print_split
-    mov rsi, rax
-    pop rdi
-    push rsi
-    mov rdx, rsi
-    call parse
-    pop rsi
-
-    mov rdi, rax
-    call print_tokens
-
-    xor rdi, rdi
-    add rsp, 32
     mov rsp, rbp
     pop rbp
+
+done:
+    xor rdi, rdi
     call exit

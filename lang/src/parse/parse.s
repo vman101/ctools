@@ -10,12 +10,16 @@ section .data
     OP_ADD: db "+", 0
     OP_PRINT: db "print", 0
 
+    debug_token_parsed: db "Parsed Token ", 0
+
 section .text
     global parse
     extern strcmp
     extern malloc
     extern err_malloc
     extern is_num_str
+    extern putendl
+    extern putnumberendl
 
 
 ;   struct token
@@ -32,14 +36,15 @@ token_alloc:    ; rax: tok* (rdi: int cnt)
     je err_malloc
     ret
 
-parse:          ; rax: tok* (rdi: char**, rsi: tok*, rdx: int n)
+parse:          ; rax: tok* (rdi: char**)
     push rbp
     mov rbp, rsp
     sub rsp, 16
     mov [rbp - 8], rdi
 
+    push r12
     push rbx
-    mov rbx, rdx
+    mov rbx, rsi
     mov rdi, rbx
     call token_alloc
     mov [rbp - 16], rax
@@ -52,15 +57,15 @@ parse:          ; rax: tok* (rdi: char**, rsi: tok*, rdx: int n)
     cmp qword rdi, 0
     je .done
 
-    mov rdx, OP_ASSIGN
+    mov rsi, OP_ASSIGN
     call strcmp
     cmp rax, 0
     je .is_assign
-    mov rdx, OP_ADD
+    mov rsi, OP_ADD
     call strcmp
     cmp rax, 0
     je .is_add
-    mov rdx, OP_PRINT
+    mov rsi, OP_PRINT
     call strcmp
     cmp rax, 0
     je .is_print
@@ -108,13 +113,24 @@ parse:          ; rax: tok* (rdi: char**, rsi: tok*, rdx: int n)
     mov [r8 + rax], rdi
     pop rdi
     mov [r8 + rax + 8], rdi
+    push rcx
+    mov r12, rdi
+    mov rdi, debug_token_parsed
+    call putendl
+    pop rcx
+    mov rdi, rcx
+    push rcx
+    call putnumberendl
+    pop rcx
     inc rcx
+    mov rdi, r12
     jmp .loop
 
 .done:
     pop rcx
     mov rax, [rbp - 16]
     pop rbx
+    pop r12
     mov rsp, rbp
     pop rbp
     ret
