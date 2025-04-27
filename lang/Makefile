@@ -28,7 +28,7 @@ SYSCALLSRC := $(addprefix $(SYSCALLDIR)/, $(addsuffix .s, \
             exit file_ops syscall_err\
             ))
 PARSESRC := $(addprefix $(PARSEDIR)/, $(addsuffix .s, \
-            parse debug_token create_expressions \
+            parse debug_token create_expressions expression debug_expression \
             ))
 
 # Collect all source files - now using the file variables, not directory variables

@@ -9,17 +9,37 @@ section .text
     extern putendl
     extern putchar
     extern putnumberendl
+    extern get_split_count
+
+
+
+;   struct token
+;       .type   0
+;       .value  +8
 
 print_tokens:       ; (rdi: tok*)
-    xor rcx, rcx
+    push rbp
+    mov rbp, rsp
+
+    sub rsp, 16
+
     push r12
     push r13
+    push r14
     push rbx
+
+    push rdi
+    call get_split_count
+    mov r14, rax
+    inc r14
+
+    pop rdi
+    mov [rbp - 8], rdi
+
     mov rbx, rdi
-    mov r13, rsi
+    xor rcx, rcx
 .loop:
-    mov rsi, r13
-    cmp rcx, rsi
+    cmp rcx, r14
     je .done
     mov r12, rcx
     mov rdi, token
@@ -31,7 +51,9 @@ print_tokens:       ; (rdi: tok*)
     call putstr
     mov rax, 16
     mul r12
-    mov rdi, [rbx + rax]
+    mov rbx, [rbp - 8]
+    lea r13, [rbx + rax]
+    mov rdi, [r13]
     push rax
     call putnumberendl
 
@@ -39,7 +61,10 @@ print_tokens:       ; (rdi: tok*)
     call putstr
     pop rax
 
-    mov rdi, [rbx + rax + 8]
+    mov rbx, [rbp - 8]
+    lea r13, [rbx + rax]
+    mov rdi, [r13 + 8]
+
     call putendl
     mov rcx, r12
     inc rcx
@@ -47,6 +72,9 @@ print_tokens:       ; (rdi: tok*)
 
 .done:
     pop rbx
+    pop r14
     pop r13
     pop r12
+    mov rsp, rbp
+    pop rbp
     ret

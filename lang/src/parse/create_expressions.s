@@ -7,6 +7,12 @@ section .text
     extern malloc
     extern err_malloc
     extern parse
+    extern expr_type
+    extern expr_tok
+    extern expr_tok_cnt
+    extern expr_size
+    extern print_tokens
+    extern print_expression
 
 
 create_expressions:         ; rax: exp* (rdi: char *filecontent)
@@ -20,7 +26,7 @@ create_expressions:         ; rax: exp* (rdi: char *filecontent)
     mov rdi, rax
     push rdi
     call get_split_count
-    mov r12, rax
+    mov [rbp - 24], rax     ; store split count
     inc rax
     mov rcx, 8
     mul rcx
@@ -29,59 +35,83 @@ create_expressions:         ; rax: exp* (rdi: char *filecontent)
     cmp rax, 0
     mov r14, rax
     je err_malloc
-    mov [rbp - 8], rax      ; char *** tok
 
-    mov [rbp - 24], r12     ; store split count
-    mov rdi, r12
-    mov rax, EXPR_SIZE
-    mul rdi
-    mov rdi, rax
-    call malloc
-    cmp rax, 0
-    je err_malloc
-    mov [rbp - 16], rax     ; *expression
+    mov [rbp - 8], rax      ; char *** tok
 
     xor rcx, rcx
     pop rdi
     mov r13, rdi
+    mov r12, [rbp - 24]
 
 .split_splits:
     mov rsi, 0x20
     cmp rcx, r12
-    je .done
+    je .splitting_done
     mov rbx, rcx
     mov rdi, [r13 + rcx * 8]
     call split
     mov rcx, rbx
     mov rbx, [rbp - 8]
     mov [rbx + rcx * 8], rax
-    push rcx
+    inc rcx
+    jmp .split_splits
+
+.splitting_done:
+
+    ; allocate expressions
+    mov rax, [expr_size]
+    mul rcx                 ; rcx contains the amount of splits aka expr count
     mov rdi, rax
-    call get_split_count
-    pop rcx
-    push rax
-    mov rsi, rax
+    call malloc
+    cmp rax, 0
+    je err_malloc
+
+    mov [rbp - 16], rax     ; store expr* on stack
+
+    xor rcx, rcx
+.loop_expressions:
+
+    ; create the actual expressions
+    mov rbx, [rbp - 24]
+    cmp rcx, rbx
+    je .expressions_done
     mov rbx, [rbp - 8]
     mov rdi, [rbx + rcx * 8]
     push rcx
     call parse
     pop rcx
     push rax
-    mov rbx, [rbp - 16]
-    mov rdx, rcx
-    mov rax, EXPR_SIZE
-    mul rdx
-    mov rdx, rax
-    pop rax
-    mov [rbx + rdx + 16], rax
-    pop rax
-    mov [rbx + rdx + 8], rax
+    mov rbx, [rbp - 16]     ; mov expr* into rax
+    mov rax, [expr_size]
+    mul rcx
+    lea rax, [rbx + rax]
+    pop rbx
+    mov rdx, [expr_tok]
+    mov [rax + rdx], rbx
     inc rcx
-    jmp .split_splits
+    jmp .loop_expressions
+
+.expressions_done:
+    ; print expressions debug
+    xor rcx, rcx
+
+.expr_loop_print:
+    mov rbx, [rbp - 24]
+    cmp rcx, rbx
+    je .done
+    mov rbx, [rbp - 16]
+    mov rax, [expr_size]
+    mul rcx
+    lea rdi, [rbx + rax]
+    push rcx
+    call print_expression
+    pop rcx
+    inc rcx
+    jmp .expr_loop_print
 
 .done:
+    mov rax, [rbp - 16]
     add rsp, 32
     mov rsp, rbp
     pop rbp
-    mov rax, [rbp - 16]
     ret

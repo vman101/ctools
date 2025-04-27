@@ -28,14 +28,6 @@ print_usage:
     mov rdi, usage
     call putstr
 
-
-%define EXPR_SIZE 32
-
-; struct expression size = 32
-;   .type
-;   .tok_count + 8
-;   .tokens + 16
-
 _start:
     pop rdi
     cmp rdi, 2

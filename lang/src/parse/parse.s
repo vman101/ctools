@@ -10,8 +10,6 @@ section .data
     OP_ADD: db "+", 0
     OP_PRINT: db "print", 0
 
-    debug_token_parsed: db "Parsed Token ", 0
-
 section .text
     global parse
     extern strcmp
@@ -20,11 +18,13 @@ section .text
     extern is_num_str
     extern putendl
     extern putnumberendl
+    extern get_split_count
 
 
 ;   struct token
 ;       .type   0
 ;       .value  +8
+
 
 token_alloc:    ; rax: tok* (rdi: int cnt)
     mov rax, rdi
@@ -44,10 +44,12 @@ parse:          ; rax: tok* (rdi: char**)
 
     push r12
     push rbx
-    mov rbx, rsi
-    mov rdi, rbx
+    call get_split_count
+    mov r12, rax
+    mov rdi, rax
+
     call token_alloc
-    mov [rbp - 16], rax
+    mov [rbp - 16], rax         ; store token array in stack
 
     xor rcx, rcx
 .loop:
@@ -113,17 +115,7 @@ parse:          ; rax: tok* (rdi: char**)
     mov [r8 + rax], rdi
     pop rdi
     mov [r8 + rax + 8], rdi
-    push rcx
-    mov r12, rdi
-    mov rdi, debug_token_parsed
-    call putendl
-    pop rcx
-    mov rdi, rcx
-    push rcx
-    call putnumberendl
-    pop rcx
     inc rcx
-    mov rdi, r12
     jmp .loop
 
 .done:

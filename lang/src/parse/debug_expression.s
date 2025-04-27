@@ -3,16 +3,18 @@ section .data
     type:   db 0xa, "type: ", 0
 section .text
     extern print_tokens
+    extern expr_type
+    extern expr_tok
+    extern expr_tok_cnt
 
-print_expressions:  ; (rdi: expr*)
+global print_expression
+print_expression:  ; (rdi: expr*)
     push r12
-    push rbp
-    mov rbp, rsp
-    sub rsp, 16
 
-    mov [rbp - 8], rdi
-    mov 
-    xor rcx, rcx
+    add rdi, [expr_tok]     ; tok**
+    mov r12, [rdi]          ; r12 = tok*
+    mov rdi, r12
+    call print_tokens
 
-.print_loop:
-    cmp rcx, 
+    pop r12
+    ret
